@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="hi" class="h-full bg-slate-900">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>स्मार्ट रसोई AI - Smart Kitchen & Recipe Planner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="h-full text-slate-100 flex flex-col font-sans">
+
+  <!-- Top Navbar -->
+  <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 sticky top-0 z-50">
+    <div class="max-w-xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">🍳</span>
+        <div>
+          <h1 class="font-bold text-amber-400 text-base leading-tight">स्मार्ट रसोई AI</h1>
+          <p class="text-[10px] text-slate-400">Diet, Mood & Grocery Planner</p>
+        </div>
+      </div>
+      <button onclick="toggleSettings()" class="text-slate-400 hover:text-amber-400 p-2 text-sm rounded-lg hover:bg-slate-700/50 transition">
+        <i class="fa-solid fa-gear"></i> API Key
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-4 overflow-y-auto">
+
+    <!-- API Key Card (Collapsible) -->
+    <div id="settingsCard" class="hidden bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl">
+      <div class="flex justify-between items-center mb-2">
+        <label class="text-xs font-semibold text-amber-400">Gemini API Key Setup</label>
+        <a href="https://aistudio.google.com" target="_blank" class="text-[11px] text-indigo-400 hover:underline">Free Key Lein ↗</a>
+      </div>
+      <div class="flex gap-2">
+        <input type="password" id="apiKey" placeholder="AI Key yahan paste karein..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-400">
+        <button onclick="saveApiKey()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-xl text-xs transition">Save</button>
+      </div>
+      <p id="keyStatus" class="text-[10px] text-slate-400 mt-2">Key aapke browser me securely save ho jayegi.</p>
+    </div>
+
+    <!-- Mode Selector Tabs -->
+    <div class="grid grid-cols-4 gap-1.5 bg-slate-800/60 p-1.5 rounded-2xl border border-slate-700/50 text-center">
+      <button onclick="switchTab('mood')" id="tab-mood" class="tab-btn py-2 px-1 rounded-xl text-xs font-medium bg-amber-500 text-slate-950 shadow transition">
+        🎭 मूड रेसिपी
+      </button>
+      <button onclick="switchTab('tiffin')" id="tab-tiffin" class="tab-btn py-2 px-1 rounded-xl text-xs font-medium text-slate-400 hover:text-amber-400 transition">
+        🍱 टिफिन
+      </button>
+      <button onclick="switchTab('grocery')" id="tab-grocery" class="tab-btn py-2 px-1 rounded-xl text-xs font-medium text-slate-400 hover:text-amber-400 transition">
+        🛒 राशन
+      </button>
+      <button onclick="switchTab('party')" id="tab-party" class="tab-btn py-2 px-1 rounded-xl text-xs font-medium text-slate-400 hover:text-amber-400 transition">
+        🎉 पार्टी
+      </button>
+    </div>
+
+    <!-- MOOD SELECTOR FORM WITH DIET OPTION -->
+    <div id="moodForm" class="bg-slate-800 border border-slate-700/70 rounded-2xl p-4 shadow-lg space-y-4">
+      
+      <!-- Step 0: Dietary Preference -->
+      <div>
+        <label class="block text-xs font-bold text-amber-400 mb-2">1. भोजन का प्रकार (Diet Preference):</label>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button onclick="selectDiet('Veg (Pure Vegetarian)')" id="d-veg" class="diet-btn p-2 rounded-xl text-[11px] bg-slate-700 border border-amber-500 text-amber-300 font-medium">🟢 शाकाहारी</button>
+          <button onclick="selectDiet('Eggiterian (Veg + Egg)')" id="d-egg" class="diet-btn p-2 rounded-xl text-[11px] bg-slate-900 border border-slate-700 text-slate-400 font-medium">🥚 अंडा</button>
+          <button onclick="selectDiet('Non-Veg')" id="d-nonveg" class="diet-btn p-2 rounded-xl text-[11px] bg-slate-900 border border-slate-700 text-slate-400 font-medium">🔴 मांसाहारी</button>
+          <button onclick="selectDiet('Jain Special (No Onion, No Garlic, No Root Veg)')" id="d-jain" class="diet-btn p-2 rounded-xl text-[11px] bg-slate-900 border border-slate-700 text-slate-400 font-medium">🪔 जैन विशेष</button>
+        </div>
+      </div>
+
+      <!-- Step 1: Type Selection -->
+      <div>
+        <label class="block text-xs font-bold text-amber-400 mb-2">2. आज कैसा खाना खाने का मूड है?</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="selectCuisine('Desi (Indian)')" id="c-desi" class="cuisine-btn p-2 rounded-xl text-xs bg-slate-700 border border-amber-500 text-amber-300 font-medium">🇮🇳 देसी (Indian)</button>
+          <button onclick="selectCuisine('Videshi (Italian/Chinese/Mexican)')" id="c-videshi" class="cuisine-btn p-2 rounded-xl text-xs bg-slate-900 border border-slate-700 text-slate-400 font-medium">🍕 विदेशी (Global)</button>
+          <button onclick="selectCuisine('Desi-Videshi Fusion')" id="c-fusion" class="cuisine-btn p-2 rounded-xl text-xs bg-slate-900 border border-slate-700 text-slate-400 font-medium">🚀 फ्यूजन (Mix)</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Taste Preference -->
+      <div>
+        <label class="block text-xs font-bold text-amber-400 mb-2">3. स्वाद या फ्लेवर कैसा चाहिए?</label>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button onclick="selectTaste('Masaledar & Chatpata')" id="t-spicy" class="taste-btn p-2 rounded-xl text-[11px] bg-slate-700 border border-amber-500 text-amber-300 font-medium">🌶️ मसालेदार</button>
+          <button onclick="selectTaste('Meetha & Dessert')" id="t-sweet" class="taste-btn p-2 rounded-xl text-[11px] bg-slate-900 border border-slate-700 text-slate-400 font-medium">🍯 मीठा</button>
+          <button onclick="selectTaste('Light & Healthy')" id="t-light" class="taste-btn p-2 rounded-xl text-[11px] bg-slate-900 border border-slate-700 text-slate-400 font-medium">🥗 हल्का</button>
+          <button onclick="selectTaste('Cheesy & Creamy')" id="t-cheesy" class="taste-btn p-2 rounded-xl text-[11px] bg-slate-900 border border-slate-700 text-slate-400 font-medium">🧀 चीज़ी</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Kitchen Ingredients -->
+      <div>
+        <label class="block text-xs font-bold text-amber-400 mb-1.5">4. आपके घर/रसोई में क्या-क्या सामान है?</label>
+        <textarea id="ingredientsInput" rows="2" placeholder="जैसे: आलू, पनीर, ब्रेड, टमाटर, चिली फ्लेक्स..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400 resize-none"></textarea>
+      </div>
+
+      <!-- Submit Button -->
+      <button onclick="generateRecipeByMood()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold py-3 rounded-xl text-xs shadow-lg shadow-orange-500/10 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> मेरी पसंद की डिश बताओ
+      </button>
+
+    </div>
+
+    <!-- GENERAL INPUT FORM (For Tiffin, Grocery, Party) -->
+    <div id="generalForm" class="hidden bg-slate-800 border border-slate-700/70 rounded-2xl p-4 shadow-lg space-y-3">
+      <label id="inputLabel" class="block text-xs font-semibold text-slate-300">डिटेल्स लिखें:</label>
+      <textarea id="generalInput" rows="3" placeholder="..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-amber-400 resize-none"></textarea>
+      <button onclick="generateGeneralResponse()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold py-3 rounded-xl text-xs">
+        <span id="genBtnText">बताओ</span>
+      </button>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader" class="hidden text-center py-8">
+      <div class="inline-block animate-spin text-amber-400 text-3xl mb-2">🍳</div>
+      <p class="text-xs text-amber-300 font-medium animate-pulse">आपकी डाइट और मूड के हिसाब से डिश ढूंढी जा रही है...</p>
+    </div>
+
+    <!-- Output Result Box -->
+    <div id="resultBlock" class="hidden bg-slate-800 border border-amber-500/30 rounded-2xl p-4 shadow-2xl space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+        <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-check text-green-400"></i> परफेक्ट रेसिपी
+        </span>
+        <div class="flex gap-2">
+          <button onclick="copyToClipboard()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded-lg text-slate-300 transition">
+            <i class="fa-regular fa-copy"></i> Copy
+          </button>
+          <button onclick="shareOnWhatsApp()" class="text-xs bg-emerald-600 hover:bg-emerald-500 px-2.5 py-1 rounded-lg text-white transition font-medium">
+            <i class="fa-brands fa-whatsapp"></i> Share
+          </button>
+        </div>
+      </div>
+
+      <div id="output" class="text-xs text-slate-200 whitespace-pre-line leading-relaxed font-normal bg-slate-900/60 p-3 rounded-xl border border-slate-800"></div>
+    </div>
+
+  </main>
+
+  <script>
+    let selectedDiet = "Veg (Pure Vegetarian)";
+    let selectedCuisine = "Desi (Indian)";
+    let selectedTaste = "Masaledar & Chatpata";
+    let activeTab = "mood";
+    let currentOutputText = "";
+
+    window.onload = () => {
+      const savedKey = localStorage.getItem('gemini_api_key');
+      if (savedKey) {
+        document.getElementById('apiKey').value = savedKey;
+        document.getElementById('keyStatus').innerText = "✓ Key pehle se saved hai!";
+        document.getElementById('keyStatus').classList.add('text-green-400');
+      } else {
+        document.getElementById('settingsCard').classList.remove('hidden');
+      }
+    };
+
+    function toggleSettings() {
+      document.getElementById('settingsCard').classList.toggle('hidden');
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('apiKey').value.trim();
+      if (!key) return alert('Kripya valid Key daalein');
+      localStorage.setItem('gemini_api_key', key);
+      document.getElementById('keyStatus').innerText = "✓ Key save ho gayi!";
+      setTimeout(() => document.getElementById('settingsCard').classList.add('hidden'), 1000);
+    }
+
+    function selectDiet(val) {
+      selectedDiet = val;
+      document.querySelectorAll('.diet-btn').forEach(b => {
+        b.className = "diet-btn p-2 rounded-xl text-[11px] bg-slate-900 border border-slate-700 text-slate-400 font-medium";
+      });
+      event.target.className = "diet-btn p-2 rounded-xl text-[11px] bg-slate-700 border border-amber-500 text-amber-300 font-medium";
+    }
+
+    function selectCuisine(val) {
+      selectedCuisine = val;
+      document.querySelectorAll('.cuisine-btn').forEach(b => {
+        b.className = "cuisine-btn p-2 rounded-xl text-xs bg-slate-900 border border-slate-700 text-slate-400 font-medium";
+      });
+      event.target.className = "cuisine-btn p-2 rounded-xl text-xs bg-slate-700 border border-amber-500 text-amber-300 font-medium";
+    }
+
+    function selectTaste(val) {
+      selectedTaste = val;
+      document.querySelectorAll('.taste-btn').forEach(b => {
+        b.className = "taste-btn p-2 rounded-xl text-[11px] bg-slate-900 border border-slate-700 text-slate-400 font-medium";
+      });
+      event.target.className = "taste-btn p-2 rounded-xl text-[11px] bg-slate-700 border border-amber-500 text-amber-300 font-medium";
+    }
+
+    function switchTab(tab) {
+      activeTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.className = "tab-btn py-2 px-1 rounded-xl text-xs font-medium text-slate-400 hover:text-amber-400 transition";
+      });
+      document.getElementById(`tab-${tab}`).className = "tab-btn py-2 px-1 rounded-xl text-xs font-medium bg-amber-500 text-slate-950 shadow transition";
+
+      if (tab === 'mood') {
+        document.getElementById('moodForm').classList.remove('hidden');
+        document.getElementById('generalForm').classList.add('hidden');
+      } else {
+        document.getElementById('moodForm').classList.add('hidden');
+        document.getElementById('generalForm').classList.remove('hidden');
+        
+        const labels = {
+          tiffin: 'टिफिन के लिए सामान या समय लिखें:',
+          grocery: 'फैमिली साइज और बजट लिखें (e.g., 4 लोग, ₹3000):',
+          party: 'मेहमानों की संख्या और स्पेशल ओकेजन बताएं:'
+        };
+        const btns = {
+          tiffin: 'टिफिन आइडिया बताओ',
+          grocery: 'राशन लिस्ट बनाओ',
+          party: 'पार्टी मेनू बनाओ'
+        };
+        document.getElementById('inputLabel').innerText = labels[tab];
+        document.getElementById('genBtnText').innerText = btns[tab];
+      }
+    }
+
+    async function generateRecipeByMood() {
+      const items = document.getElementById('ingredientsInput').value.trim() || "सामान्य मसाले, आटा";
+      
+      const prompt = `Aap ek World-Class Chef hain. User ka aaj diet aur mood details yeh hai:
+- Diet Type: ${selectedDiet} (STRICTLY FOLLOW THIS DIET)
+- Cuisine Style: ${selectedCuisine}
+- Flavor/Taste: ${selectedTaste}
+- Available Ingredients in Kitchen: ${items}
+
+CRITICAL RULE:
+1. Agar Diet '${selectedDiet}' Jain hai, toh Pyaj (Onion), Lahsun (Garlic) aur Root Vegetables (Aloo) ka upyog BILKUL NA KAREIN.
+2. Agar Diet Pure Veg hai, toh Anda ya Maas bilkul include na karein.
+
+Requirement: User ki Diet (${selectedDiet}), Style (${selectedCuisine}) aur Flavor (${selectedTaste}) ke hisaab se 2 aakarshak dishes batayein jo unke paas maujood saman se ban sakein. Hindi me clean point-wise steps me answer dein.`;
+
+      await callAI(prompt);
+    }
+
+    async function generateGeneralResponse() {
+      const input = document.getElementById('generalInput').value.trim() || "सामान्य डिटेल्स";
+      let prompt = "";
+
+      if (activeTab === 'tiffin') prompt = `Input: ${input}। Diet: ${selectedDiet}। Quick 10-Min Tiffin Recipes Hindi me batayein.`;
+      else if (activeTab === 'grocery') prompt = `Details: ${input}। Diet Preference: ${selectedDiet}। 1 Mahine ki Ration List Hindi me categories me banayein.`;
+      else if (activeTab === 'party') prompt = `Details: ${input}। Diet Preference: ${selectedDiet}। Party Menu aur Ration list Hindi me batayein.`;
+
+      await callAI(prompt);
+    }
+
+    async function callAI(promptText) {
+      const apiKey = localStorage.getItem('gemini_api_key') || document.getElementById('apiKey').value.trim();
+      if (!apiKey) {
+        alert('Kripya pehle Gemini API Key daalein!');
+        toggleSettings();
+        return;
+      }
+
+      document.getElementById('loader').classList.remove('hidden');
+      document.getElementById('resultBlock').classList.add('hidden');
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+        });
+        const data = await response.json();
+        currentOutputText = data.candidates[0].content.parts[0].text;
+
+        document.getElementById('output').innerText = currentOutputText;
+        document.getElementById('resultBlock').classList.remove('hidden');
+      } catch (err) {
+        alert('API Key invalid hai ya koi error aaya!');
+      } finally {
+        document.getElementById('loader').classList.add('hidden');
+      }
+    }
+
+    function copyToClipboard() {
+      navigator.clipboard.writeText(currentOutputText);
+      alert('Copied!');
+    }
+
+    function shareOnWhatsApp() {
+      if (!currentOutputText) return;
+      const text = encodeURIComponent("🍳 *स्मार्ट रसोई AI - स्पेशल रेसिपी:*\n\n" + currentOutputText);
+      window.open(`https://wa.me/?text=${text}`, '_blank');
+    }
+  </script>
+</body>
+</html>
